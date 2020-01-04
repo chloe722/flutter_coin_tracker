@@ -36,11 +36,17 @@ const bitcoinAverageURL =
 
 class CoinData {
 
-  Future<CoinDataResponse> getCoinData(
-      {String cryptoCoin, String currency}) async {
-    String url = '$bitcoinAverageURL$cryptoCoin$currency';
-    NetworkHelper networkHelper = NetworkHelper();
-    Map res = await networkHelper.getData(url: url);
-    return CoinDataResponse.fromJson(res);
+  Future<Map> getCoinData({String currency}) async {
+    Map<String, CoinDataResponse> map = Map();
+
+    for (String crypto in cryptoList) {
+      String url = '$bitcoinAverageURL$crypto$currency';
+      NetworkHelper networkHelper = NetworkHelper();
+      Map res = await networkHelper.getData(url: url);
+      var jsonRes = CoinDataResponse.fromJson(res);
+      map[crypto] = jsonRes;
+    }
+
+    return map;
   }
 }

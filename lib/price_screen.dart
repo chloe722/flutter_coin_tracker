@@ -12,7 +12,8 @@ class PriceScreen extends StatefulWidget {
 
 class _PriceScreenState extends State<PriceScreen> {
   String selectedCurrency = 'USD';
-  String coinVal = '?';
+  Map<String, CoinDataResponse> coinVal;
+  bool isWaiting = false;
 
   DropdownButton<String> androidDropdown() {
     List<DropdownMenuItem<String>> dropdownItems = [];
@@ -30,9 +31,7 @@ class _PriceScreenState extends State<PriceScreen> {
       onChanged: (value) {
         setState(() {
           selectedCurrency = value;
-          for (String crypto in cryptoList) {
-            getData(cryptoCoin: crypto, currency: selectedCurrency);
-          }
+          getData(currency: selectedCurrency);
         });
       },
     );
@@ -51,23 +50,22 @@ class _PriceScreenState extends State<PriceScreen> {
         print(selectedIndex);
         setState(() {
           selectedCurrency = currenciesList[selectedIndex];
-          for (String crypto in cryptoList) {
-            getData(cryptoCoin: crypto, currency: selectedCurrency);
-          }
+          getData(currency: selectedCurrency);
         });
       },
       children: pickerItems,
     );
   }
 
-  void getData({String cryptoCoin, String currency}) async {
+  void getData({String currency}) async {
+    isWaiting = true;
     try {
-      CoinDataResponse _coinDataResponse;
+      Map<String, CoinDataResponse> _coinDataResponse;
       CoinData coinData = CoinData();
-      _coinDataResponse =
-          await coinData.getCoinData(cryptoCoin: cryptoCoin, currency: currency);
+      _coinDataResponse = await coinData.getCoinData(currency: currency);
       setState(() {
-        coinVal = _coinDataResponse.last.toStringAsFixed(0);
+        coinVal = _coinDataResponse;
+        isWaiting = false;
       });
     } catch (e) {
       print(e);
@@ -79,7 +77,6 @@ class _PriceScreenState extends State<PriceScreen> {
     getData(currency: selectedCurrency);
     super.initState();
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -94,10 +91,22 @@ class _PriceScreenState extends State<PriceScreen> {
           Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: cryptoList.map((i) => CoinDisplayedItem(cryptoCoin: i, coinVal: coinVal, selectedCurrency: selectedCurrency),
-            ).toList(),
+            children: isWaiting
+                ? cryptoList
+                    .map((i) => CryptoCard(
+                        cryptoCoin: i,
+                        coinVal: '?',
+                        selectedCurrency: selectedCurrency))
+                    .toList()
+                : coinVal.keys
+                    .map(
+                      (i) => CryptoCard(
+                          cryptoCoin: i,
+                          coinVal: coinVal[i].last.toStringAsFixed(0),
+                          selectedCurrency: selectedCurrency),
+                    )
+                    .toList(),
           ),
-
           Container(
             height: 150.0,
             alignment: Alignment.center,

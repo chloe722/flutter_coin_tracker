@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 
-class CoinDisplayedItem extends StatelessWidget {
-  CoinDisplayedItem({this.coinVal, this.selectedCurrency, this.cryptoCoin});
-
+class CryptoCard extends StatelessWidget {
+  CryptoCard({ this.cryptoCoin, this.coinVal, this.selectedCurrency});
+  final String cryptoCoin;
   final String coinVal;
   final String selectedCurrency;
-  final String cryptoCoin;
 
   @override
   Widget build(BuildContext context) {
